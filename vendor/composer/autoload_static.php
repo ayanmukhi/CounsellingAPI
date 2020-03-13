@@ -101,12 +101,18 @@ class ComposerStaticInit584576283f1a81410a7671c98177eec6
         'FileMaker_Result_Implementation' => __DIR__ . '/../..' . '/src/lib/FileMaker/Implementation/ResultImpl.php',
         'PEAR' => __DIR__ . '/../..' . '/src/lib/FileMaker/PEAR.php',
         'PEAR_Error' => __DIR__ . '/../..' . '/src/lib/FileMaker/PEAR.php',
+        'availability\\apiClass' => __DIR__ . '/../..' . '/availability/api.php',
+        'media\\apiClass' => __DIR__ . '/../..' . '/media/api.php',
         'src\\authenticate\\authorize' => __DIR__ . '/../..' . '/src/authenticate/authorize.php',
         'src\\config\\connection\\dbconnection' => __DIR__ . '/../..' . '/src/config/connection/conn.php',
         'src\\config\\duplicate' => __DIR__ . '/../..' . '/src/config/duplicate.php',
         'src\\config\\jwt' => __DIR__ . '/../..' . '/src/config/jwt.php',
+        'src\\config\\responses\\availabilityResponses' => __DIR__ . '/../..' . '/src/config/responses/availabilityResponseFormat.php',
+        'src\\config\\responses\\mediaResponses' => __DIR__ . '/../..' . '/src/config/responses/mediaResponseFormat.php',
         'src\\config\\responses\\userResponses' => __DIR__ . '/../..' . '/src/config/responses/responseFormat.php',
-        'src\\validations\\validateFields' => __DIR__ . '/../..' . '/src/validations/validate.php',
+        'src\\validations\\availability\\validate' => __DIR__ . '/../..' . '/src/validations/availability.php',
+        'src\\validations\\validateFields' => __DIR__ . '/../..' . '/src/validations/userValidate.php',
+        'users\\apiClass' => __DIR__ . '/../..' . '/users/api.php',
     );
 
     public static function getInitializer(ClassLoader $loader)

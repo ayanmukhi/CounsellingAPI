@@ -11,7 +11,11 @@
             "src/authenticate",
             "src/lib",
             "src/config/responses",
-            "src/validations"
+            "src/validations",
+            "users",
+            "media",
+            "availability"
+            
         ]
 
     }

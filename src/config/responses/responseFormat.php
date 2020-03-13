@@ -43,6 +43,7 @@ class userResponses {
             'username' => $result->_impl->_fields['_ka_Username_t'][0],
             'password' => $result->_impl->_fields['Password_t'][0],
             'role' => $result->_impl->_fields['Role_t'][0],
+            'image' => $result->_impl->_fields['Image_r'][0],
         );
     }
 

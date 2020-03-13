@@ -86,7 +86,6 @@ class validateFields
         else  {
             // print_r($obj->checkemail($email, $request, $response));
             if ($obj->checkemail($email, $request, $response) != -1) {
-                
                 return "user with this email is already registered, use a different email";
             }
         }
