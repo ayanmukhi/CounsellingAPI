@@ -12,13 +12,50 @@ use src\config\responses as res;
 class apiClass {
 
     //function to get all user records
-    public function getALL($request, $response) {
-        $jwt = new config\jwt();
-        $auth = new auth\authorize();
+    // public function getALL($request, $response) {
+    //     $jwt = new config\jwt();
+    //     $auth = new auth\authorize();
 
-        if( $auth->checkAdmin($request, $response) != "legit") {
-            return $auth->checkAdmin($request, $response);
-        }
+    //     // if( $auth->checkAdmin($request, $response) != "legit") {
+    //     //     return $auth->checkAdmin($request, $response);
+    //     // }
+
+    //     //get the object of database connection
+    //     $dbobj = new dbconnect\dbconnection();
+    //     $fm = $dbobj->connect();
+
+    //     //object from response class
+    //     $res = new res\userResponses();
+   
+        
+    //     //specify the layout
+    //     $findCommand = $fm->newFindCommand('Signup_USER');
+        
+    //     //execute the find command to get all student records
+    //     $result = $findCommand->execute();
+
+    //     //checking for errors in the result
+    //     if (\FileMaker::isError($result)) {
+    //         if( $result->getMessage() == "No records match the request" ) {
+    //             $newresponse = $response->withStatus(404);
+    //             return $newresponse->withJson(['success'=>false, 'message'=>'database is empty']);
+    //         }
+    //         else {
+    //             $newresponse = $response->withStatus(404);
+    //             return $newresponse->withJson(['success'=>false, 'message'=>'server error']);
+    //         }
+    //     }
+
+    //     $data = $res->getAllRecords($result->getrecords());
+
+    //     $newresponse = $response->withStatus(200);
+    //     return $newresponse->withJson(['success'=>true, 'data'=>$data]);
+        
+    // }
+
+    //function to get all counselors details
+    public function getAllCounselors($request, $response) {
+        $jwt = new config\jwt();
 
         //get the object of database connection
         $dbobj = new dbconnect\dbconnection();
@@ -26,12 +63,14 @@ class apiClass {
 
         //object from response class
         $res = new res\userResponses();
-
-        
+   
         
         //specify the layout
         $findCommand = $fm->newFindCommand('Signup_USER');
         
+        //specify the role match criteria
+        $findCommand->addFindCriterion('Role_t', "counselor");
+
         //execute the find command to get all student records
         $result = $findCommand->execute();
 
@@ -46,7 +85,8 @@ class apiClass {
                 return $newresponse->withJson(['success'=>false, 'message'=>'server error']);
             }
         }
-
+        // print_r($result->getrecords() );
+        // exit(0);
         $data = $res->getAllRecords($result->getrecords());
 
         $newresponse = $response->withStatus(200);
@@ -55,16 +95,55 @@ class apiClass {
     }
 
 
+    public function getCounselorAvailabilityDetails($id) {
+        $jwt = new config\jwt();
+
+        //get the object of database connection
+        $dbobj = new dbconnect\dbconnection();
+        $fm = $dbobj->connect();
+
+        //object from response class
+        $res = new res\userResponses();
+   
+        
+        //specify the layout
+        $findCommand = $fm->newFindCommand('CounselorAvailability_AVAILABILITY');
+        
+        //specify the role match criteria
+        $findCommand->addFindCriterion('_kf_Id_n', $id);
+
+        //execute the find command to get all student records
+        $result = $findCommand->execute();
+
+        //checking for errors in the result
+        if (\FileMaker::isError($result)) {
+            if( $result->getMessage() == "No records match the request" ) {
+                return NULL;
+            }
+            $findError = 'Find Error: '. $result->getMessage(). ' (' . $result->code. ')';
+            print_r($findError);
+            exit(0);
+            
+        }
+
+        return $result->getrecords();
+        
+    }
+
+    public function getCounselorContact($id) {
+
+    }
+
+
 
     //function to get a single user record
     public function get($request, $response, $args) {
-       
         //database connection
         $dbobj = new dbconnect\dbconnection();
         $fm = $dbobj->connect();
         
         //object from response class
-        $res = new res\mediaResponses();
+        $res = new res\userResponses();
 
         //request data validation objects
         $valid = new validate\validateFields();

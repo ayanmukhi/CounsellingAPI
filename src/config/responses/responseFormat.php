@@ -18,7 +18,7 @@ class userResponses {
         //generating the token
         $token = $jwt->jwttokenencryption($id, $role);
 
-        return array( 'data'=>array( 'sic'=>$id, 'status'=>$role), 'token'=>$token); 
+        return array( 'data'=>array( 'sic'=>$id, 'role'=>$role), 'token'=>$token); 
     }
 
     function getActivityRes($result) {
@@ -30,9 +30,27 @@ class userResponses {
     //return the proper get response format
     function getresponse($result) {
 
+        $id = $result->_impl->_fields['_kp_Id_n'][0];
+        $availabilityDetails = \users\apiClass::getCounselorAvailabilityDetails($id);
+        // print_r($availabilityDetails);
+        // exit(0);
+        $Availability = [];
+        if( $availabilityDetails != null) {
+            foreach ($availabilityDetails as $details) {
+                array_push($Availability, array(
+                    'Status'=>$details->_impl->_fields['Status_t'][0],
+                    'Time'=>$details->_impl->_fields['Time_t'][0],
+                    'Day'=>explode("\n", $details->_impl->_fields['Day_t'][0]),
+                    'Type'=>$details->_impl->_fields['Type_t'][0],
+                    'Location'=>$details->_impl->_fields['Location_t'][0],
+                    'Rating_t'=>$details->_impl->_fields['Rating_n'][0]
+                ));
+            }
+        } 
+        
         $dob = "";
-        if ( $result->_impl->_fields['Date_d'][0] != "" ) {
-            $dob = date("dS-M-Y", strtotime($result->_impl->_fields['Date_d'][0]));
+        if ( $result->_impl->_fields['Dob_d'][0] != "" ) {
+            $dob = date("dS-M-Y", strtotime($result->_impl->_fields['Dob_d'][0]));
         }
         
         return array(
@@ -43,7 +61,8 @@ class userResponses {
             'username' => $result->_impl->_fields['_ka_Username_t'][0],
             'password' => $result->_impl->_fields['Password_t'][0],
             'role' => $result->_impl->_fields['Role_t'][0],
-            'image' => $result->_impl->_fields['Image_r'][0],
+            'image' => $result->_impl->_fields['Image_t'][0],
+            'availability' => $Availability
         );
     }
 
@@ -54,31 +73,18 @@ class userResponses {
         $fm = $dbobj->connect();
         
 
-        $seekerRecords = [];
-        $counselorRecords = [];
+        $records=[];
+        $counselorData=[];
 
         //looping through each records
         foreach ($result as $rec) {
-
-            //saving the current record role type
-            $role = $rec->_impl->_fields['Role_t'][0];
-
-            if( $role === "seeker") {
-                array_push($seekerRecords, userResponses::getresponse($rec));
-            }
-            else if( $role  === "counselor" ) {
-                array_push($counselorRecords, userResponses::getresponse($rec));
-            }
-            else {
-                //do not returning any admin record data
-            }
+            $temp = userResponses::getresponse($rec);
+            array_push($records, $temp);
+            
         }
 
-        //combining both the records in one array
-        return array( 
-            "seekers" => $seekerRecords,
-            "counselor" => $counselorRecords
-        );
+        
+        return $records;
     }
 
     function insertUser($vars) {
@@ -89,7 +95,7 @@ class userResponses {
         //creating the required response format
         $student = array(
             'Name_t' => $vars->name,
-            'Date_d' => "$dob",
+            'Dob_d' => "$dob",
             'Gender_t' => "$vars->gender",
             '_ka_Username_t' => "$vars->username",
             'Password_t' => "$vars->password",

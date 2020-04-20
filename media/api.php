@@ -10,7 +10,7 @@ use src\config\responses as res;
 
 class apiClass {
 
-    //function to get a single user record
+    //function to get media records
     public function getALLMedia($request, $response, $args)
     {
         //database connection

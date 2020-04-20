@@ -25,14 +25,17 @@ $c = new \Slim\Container($configuration);
 $app = new \Slim\App($c);
 
 
+
 //grouping the APIs for accessing users.
 $app->group('/api/v1/users', function () use ($app) {
     
 
     //api for admin to get all users records.
     $app->get('', function(Request $request, Response $response) {
-        return users\apiClass::getAll($request, $response);
+        return users\apiClass::getAllCounselors($request, $response);
     });
+
+    
 
 
     //api for get user
