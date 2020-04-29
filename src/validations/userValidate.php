@@ -9,7 +9,7 @@ class validateFields
 
     function sicVal($args) {
         $id = $args['id'];
-        if (preg_match("/^\d+$/",$id) == false) {
+        if (preg_match("/^\d+$/", $id) == false) {
         return 'sic must be a number';
         }
         return "no error";
@@ -54,14 +54,14 @@ class validateFields
             $today = date("Y-m-d");
             $diff = date_diff(date_create($dob), date_create($today));
             $age = $diff->format('%y');
-            if( $age > 30 or $age < 15) {
+            if( $age < 15) {
                 return "age must be between 15 - 30 years";
             }
         }
         
 
         $gender = $vars->gender;
-        if( preg_match("/^(male|female|other|)$/", $gender) == false) {
+        if( preg_match("/^(Male|Female|Other|)$/", $gender) == false) {
             return "gender is invalid";
         }
 
@@ -80,13 +80,13 @@ class validateFields
         
         if( $method == "put") {
             if(($obj->checkemail($email, $request, $response) != -1) and ($obj->checkemail($email, $request, $response) != $vars->id)) {
-                return "user with this email is already registered, use a different email";
+                return "email already used";
             }
         }
         else  {
             // print_r($obj->checkemail($email, $request, $response));
             if ($obj->checkemail($email, $request, $response) != -1) {
-                return "user with this email is already registered, use a different email";
+                return "email already used";
             }
         }
      

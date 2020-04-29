@@ -31,11 +31,10 @@ $app->group('/api/v1/users', function () use ($app) {
     
 
     //api for admin to get all users records.
-    $app->get('', function(Request $request, Response $response) {
+    $app->get('/counselors', function(Request $request, Response $response) {
         return users\apiClass::getAllCounselors($request, $response);
     });
 
-    
 
 
     //api for get user

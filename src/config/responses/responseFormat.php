@@ -14,11 +14,13 @@ class userResponses {
         //extracting the id and role from the record.
         $id = $result[0]->_impl->_fields['_kp_Id_n'][0];
         $role = $result[0]->_impl->_fields['Role_t'][0];
+        $name = $result[0]->_impl->_fields['Name_t'][0];
+        $image = $result[0]->_impl->_fields['Image_t'][0];
 
         //generating the token
-        $token = $jwt->jwttokenencryption($id, $role);
+        $token = $jwt->jwttokenencryption($id, $role, $name);
 
-        return array( 'data'=>array( 'sic'=>$id, 'role'=>$role), 'token'=>$token); 
+        return array( 'image'=>$image, 'token'=>$token); 
     }
 
     function getActivityRes($result) {
@@ -31,39 +33,56 @@ class userResponses {
     function getresponse($result) {
 
         $id = $result->_impl->_fields['_kp_Id_n'][0];
-        $availabilityDetails = \users\apiClass::getCounselorAvailabilityDetails($id);
-        // print_r($availabilityDetails);
-        // exit(0);
-        $Availability = [];
-        if( $availabilityDetails != null) {
-            foreach ($availabilityDetails as $details) {
-                array_push($Availability, array(
-                    'Status'=>$details->_impl->_fields['Status_t'][0],
-                    'Time'=>$details->_impl->_fields['Time_t'][0],
-                    'Day'=>explode("\n", $details->_impl->_fields['Day_t'][0]),
-                    'Type'=>$details->_impl->_fields['Type_t'][0],
-                    'Location'=>$details->_impl->_fields['Location_t'][0],
-                    'Rating_t'=>$details->_impl->_fields['Rating_n'][0]
-                ));
-            }
-        } 
-        
+        $role = $result->_impl->_fields['Role_t'][0];
         $dob = "";
         if ( $result->_impl->_fields['Dob_d'][0] != "" ) {
-            $dob = date("dS-M-Y", strtotime($result->_impl->_fields['Dob_d'][0]));
+            $dob = date("Y-m-d", strtotime($result->_impl->_fields['Dob_d'][0]));
+        }
+        if( $role == "counselor") {
+            $availabilityDetails = \users\apiClass::getCounselorAvailabilityDetails($id);
+            // print_r($availabilityDetails);
+            // exit(0);
+            $Availability = [];
+            if( $availabilityDetails != null) {
+                foreach ($availabilityDetails as $details) {
+                    array_push($Availability, array(
+                        'Status'=>$details->_impl->_fields['Status_t'][0],
+                        'Time'=>$details->_impl->_fields['Time_t'][0],
+                        'Day'=>explode("\n", $details->_impl->_fields['Day_t'][0]),
+                        'Type'=>$details->_impl->_fields['Type_t'][0],
+                        'Location'=>$details->_impl->_fields['Location_t'][0],
+                        'Rating_t'=>$details->_impl->_fields['Rating_n'][0]
+                    ));
+                }
+            } 
+            
+            
+            
+            return array(
+                'id' => $id,
+                'name' => $result->_impl->_fields['Name_t'][0],
+                'gender' => $result->_impl->_fields['Gender_t'][0],
+                'dob' => $dob,
+                'username' => $result->_impl->_fields['_ka_Username_t'][0],
+                'password' => $result->_impl->_fields['Password_t'][0],
+                'role' => $role,
+                'image' => $result->_impl->_fields['Image_t'][0],
+                'availability' => $Availability
+            );
+        }
+        else {
+            return array(
+                'id' => $id,
+                'name' => $result->_impl->_fields['Name_t'][0],
+                'gender' => $result->_impl->_fields['Gender_t'][0],
+                'dob' => $dob,
+                'username' => $result->_impl->_fields['_ka_Username_t'][0],
+                'password' => $result->_impl->_fields['Password_t'][0],
+                'role' => $role,
+                'image' => $result->_impl->_fields['Image_t'][0]
+            );
         }
         
-        return array(
-            'id' => $result->_impl->_fields['_kp_Id_n'][0],
-            'name' => $result->_impl->_fields['Name_t'][0],
-            'gender' => $result->_impl->_fields['Gender_t'][0],
-            'dob' => $dob,
-            'username' => $result->_impl->_fields['_ka_Username_t'][0],
-            'password' => $result->_impl->_fields['Password_t'][0],
-            'role' => $result->_impl->_fields['Role_t'][0],
-            'image' => $result->_impl->_fields['Image_t'][0],
-            'availability' => $Availability
-        );
     }
 
     function getAllRecords($result) {
@@ -100,7 +119,7 @@ class userResponses {
             '_ka_Username_t' => "$vars->username",
             'Password_t' => "$vars->password",
             'Role_t' => $vars->role,
-            'Image_r' => $vars->image
+            'Image_t' => $vars->image
         );
         return $student;
     }

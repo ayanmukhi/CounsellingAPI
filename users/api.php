@@ -134,8 +134,6 @@ class apiClass {
 
     }
 
-
-
     //function to get a single user record
     public function get($request, $response, $args) {
         //database connection
@@ -415,7 +413,7 @@ class apiClass {
 
         //response after successful record is fetched
         $newresponse = $response->withStatus(200);
-        return $response->withJson(["success"=>true, "data"=>$resFormat['data'], "token"=>$resFormat['token']]);
+        return $response->withJson(["success"=>true, "token"=>$resFormat['token']]);
 
     }
 }

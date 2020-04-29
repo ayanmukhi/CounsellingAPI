@@ -11,13 +11,11 @@ class jwt
         $this->secretkey = 'secretsad';
     }
 
-    public function jwttokenencryption($id, $role) 
+    public function jwttokenencryption($id, $role, $name) 
     {   
 
-
-
         //constructing payload
-        $payload = json_encode(array('role' => $role, 'id' => strval($id)));
+        $payload = json_encode(array('role' => $role, 'id' => strval($id), "name" => $name));
 
         //encrypting using firebase library
         $encoded = token::encode($payload, $this->secretkey, 'HS256');
@@ -52,12 +50,8 @@ class jwt
                 $obj["role"] = $data->role;
                 return json_encode($obj);
             }        
-        }
-        
-        
-        
+        }     
     }
-
 }
   
 ?>
