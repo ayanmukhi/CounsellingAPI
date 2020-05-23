@@ -14,7 +14,9 @@
             "src/validations",
             "users",
             "media",
-            "availability"
+            "availability",
+            "bookings",
+            "contact"
             
         ]
 

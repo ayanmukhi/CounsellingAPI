@@ -17,6 +17,9 @@ class userResponses {
         $name = $result[0]->_impl->_fields['Name_t'][0];
         $image = $result[0]->_impl->_fields['Image_t'][0];
 
+        
+
+
         //generating the token
         $token = $jwt->jwttokenencryption($id, $role, $name);
 
@@ -31,21 +34,63 @@ class userResponses {
 
     //return the proper get response format
     function getresponse($result) {
-
+        
+        $allBookings = [];
         $id = $result->_impl->_fields['_kp_Id_n'][0];
         $role = $result->_impl->_fields['Role_t'][0];
         $dob = "";
+
         if ( $result->_impl->_fields['Dob_d'][0] != "" ) {
             $dob = date("Y-m-d", strtotime($result->_impl->_fields['Dob_d'][0]));
         }
+
+        $contact = \contact\apiClass::getContactDetails($id);
+
+        //echo("contact : " . $contact);
+        if( $contact  != null ) {
+            $contactDetails = array (
+                'state' => $contact[0]->_impl->_fields['State_t'][0],
+                'streetName' => $contact[0]->_impl->_fields['StreetName_t'][0],
+                'district' => $contact[0]->_impl->_fields['District_t'][0],
+                'pin' => $contact[0]->_impl->_fields['Pin_n'][0],
+                'phone' => $contact[0]->_impl->_fields['_ku_Phone_n'][0]
+            );
+        }
+        else {
+            $contactDetails = null;
+        }
+
         if( $role == "counselor") {
-            $availabilityDetails = \users\apiClass::getCounselorAvailabilityDetails($id);
-            // print_r($availabilityDetails);
-            // exit(0);
+            
+
             $Availability = [];
+
+            $availabilityDetails = \availability\apiClass::getCounselorAvailabilityDetails($id);
+            
+            
             if( $availabilityDetails != null) {
                 foreach ($availabilityDetails as $details) {
+
+                    $id = $details->_impl->_fields['_kp_AvailabilityId_n'][0];
+                    $bookings = \bookings\apiClass::getCounselorBookings($id, true);
+                    
+                    
+                    if( $bookings !=  null ) {
+
+                        //structuring all the client dates
+                        array_push($allBookings, array(
+                            'SeekerId' => $bookings->_impl->_fields['_kf_Id_n'][0],
+                            'Date' => $bookings->_impl->_fields['Date_d'][0],
+                            'AvailabilityId' => $bookings->_impl->_fields['_kf_AvailabilityId_n'][0],
+                        ));
+
+                    }
+                    
+
+
+
                     array_push($Availability, array(
+                        'Id' => $details->_impl->_fields['_kp_AvailabilityId_n'][0],
                         'Status'=>$details->_impl->_fields['Status_t'][0],
                         'Time'=>$details->_impl->_fields['Time_t'][0],
                         'Day'=>explode("\n", $details->_impl->_fields['Day_t'][0]),
@@ -67,10 +112,27 @@ class userResponses {
                 'password' => $result->_impl->_fields['Password_t'][0],
                 'role' => $role,
                 'image' => $result->_impl->_fields['Image_t'][0],
-                'availability' => $Availability
+                'contact' => $contactDetails,
+                'availability' => $Availability,
+                'bookings' => $allBookings
             );
         }
         else {
+            $appointment = \bookings\apiClass::getCounselorBookings($id, false);
+            
+            if( $appointment != null ) {
+                //structuring all appoinments of the seeker
+                foreach($appointment as $bookings) {
+                    array_push($allBookings, array(
+                        'SeekerId' => $bookings->_impl->_fields['_kf_Id_n'][0],
+                        'Date' => $bookings->_impl->_fields['Date_d'][0],
+                        'AvailabilityId' => $bookings->_impl->_fields['_kf_AvailabilityId_n'][0],
+                    ));
+                }
+            }
+
+            
+
             return array(
                 'id' => $id,
                 'name' => $result->_impl->_fields['Name_t'][0],
@@ -79,11 +141,16 @@ class userResponses {
                 'username' => $result->_impl->_fields['_ka_Username_t'][0],
                 'password' => $result->_impl->_fields['Password_t'][0],
                 'role' => $role,
-                'image' => $result->_impl->_fields['Image_t'][0]
+                'image' => $result->_impl->_fields['Image_t'][0],
+                'contact' => $contactDetails,
+                'bookings' => $allBookings
             );
         }
         
     }
+
+
+    
 
     function getAllRecords($result) {
         

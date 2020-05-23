@@ -8,8 +8,7 @@ class validate {
 
     //function to validate the sic
     function sicVal($args) {
-        $id = $args['counselor_id'];
-        if (preg_match("/^\d+$/",$id) == false) {
+        if (preg_match("/^\d+$/",$args) == false) {
         return 'availability id must be a number';
         }
         return "no error";

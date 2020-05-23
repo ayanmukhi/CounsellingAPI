@@ -8,22 +8,70 @@ header ("Access-Control-Allow-Headers: origin, x-requested-with, content-type, a
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Slim\Http\UploadedFile;
 
 
-require './../vendor/autoload.php';
+// require './../vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 //configuration for error display
 $configuration = [
     'settings' => [
-        'displayErrorDetails' => true,  
+        'displayErrorDetails' => true,      
     ],
 ];
+
+
 
 
 //default error handlers
 $c = new \Slim\Container($configuration);               
 $app = new \Slim\App($c);
 
+
+$container = $app->getContainer();
+$container['upload_directory'] = __DIR__ . './../uploads';
+
+
+//app to handle uploaded files of html
+$app->post('/upload', function(Request $request, Response $response) {
+    // echo "aaa";
+    // print_r($request->getUploadedFiles());
+    $directory = $this->get('upload_directory');
+
+    $uploadedFiles = $request->getUploadedFiles();
+    // print_r($uploadedFiles);
+
+    // handle single input with single file upload
+    $uploadedFile = $uploadedFiles['myFile'];
+    // print_r($uploadedFile);
+    // exit(0);
+    if ($uploadedFile->getError() === UPLOAD_ERR_OK) {
+        $filename = moveUploadedFile($directory, $uploadedFile);
+        $response->write('uploaded ' . $filename . '<br/>');
+        return $response->withJson(['success' => true],200);
+    }
+    return $response->withJson(['success' => false],500);
+});
+
+/**
+ * Moves the uploaded file to the upload directory and assigns it a unique name
+ * to avoid overwriting an existing uploaded file.
+ *
+ * @param string $directory directory to which the file is moved
+ * @param UploadedFile $uploadedFile file uploaded file to move
+ * @return string filename of moved file
+ */
+function moveUploadedFile($directory, UploadedFile $uploadedFile)
+{
+    $extension = pathinfo($uploadedFile->getClientFilename(), PATHINFO_EXTENSION);
+    $basename = bin2hex(random_bytes(8)); // see http://php.net/manual/en/function.random-bytes.php
+    $filename = sprintf('%s.%0.8s', $basename, $extension);
+
+    $uploadedFile->moveTo($directory . DIRECTORY_SEPARATOR . $filename);
+
+    return $filename;
+}
 
 
 //grouping the APIs for accessing users.
@@ -90,7 +138,7 @@ $app->group('/api/v1/availabilities', function() use ($app) {
     });
 
     //api to get counselor's specific record
-    $app->get('/{counselor_id}', function(Request $request, Response $response, array $agrs){
+    $app->get('/{id}', function(Request $request, Response $response, array $agrs){
         return availability\apiClass::getAvailability($request, $response, $agrs);
     });
 
@@ -99,6 +147,14 @@ $app->group('/api/v1/availabilities', function() use ($app) {
         return availability\apiClass::deleteAvailability($request, $response, $args);
     });
 
+});
+
+$app->get('/api/v1/appointedSeeker/{id}', function(Request $request, Response $response, array $args) {
+    return bookings\apiClass::getAppointedUser($request, $response, $args);
+});
+
+$app->get('/api/v1/bookedCounselor/{id}', function(Request $request, Response $response, array $args) {
+    return bookings\apiClass::getBookedCounselor($request, $response, $args);
 });
 
 

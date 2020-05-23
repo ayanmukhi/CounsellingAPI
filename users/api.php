@@ -94,48 +94,84 @@ class apiClass {
         
     }
 
+    //function to get contact of user
+    // public function getContactDetails($id) {
+    //     $jwt = new config\jwt();
 
-    public function getCounselorAvailabilityDetails($id) {
-        $jwt = new config\jwt();
+    //     //get the object of database connection
+    //     $dbobj = new dbconnect\dbconnection();
+    //     $fm = $dbobj->connect();
 
-        //get the object of database connection
-        $dbobj = new dbconnect\dbconnection();
-        $fm = $dbobj->connect();
-
-        //object from response class
-        $res = new res\userResponses();
+    //     //object from response class
+    //     $res = new res\userResponses();
    
         
-        //specify the layout
-        $findCommand = $fm->newFindCommand('CounselorAvailability_AVAILABILITY');
+    //     //fetch contact details.
+    //     $findCommand = $fm->newFindCommand('InsertUserContact_CONTACT');
+
+    //     //specify the email and password match criteria
+    //     $findCommand->addFindCriterion('_kf_Id_n', ' == '.$id);
+
+
+    //     $contact;
+
+    //     //execute the above command
+    //     $contactResult = $findCommand->execute(); 
+
         
-        //specify the role match criteria
-        $findCommand->addFindCriterion('_kf_Id_n', $id);
 
-        //execute the find command to get all student records
-        $result = $findCommand->execute();
-
-        //checking for errors in the result
-        if (\FileMaker::isError($result)) {
-            if( $result->getMessage() == "No records match the request" ) {
-                return NULL;
-            }
-            $findError = 'Find Error: '. $result->getMessage(). ' (' . $result->code. ')';
-            print_r($findError);
-            exit(0);
+    //     //checking for errors in the result
+    //     if (\FileMaker::isError($contactResult)) {
+    //         if( $contactResult->getMessage() == "No records match the request" ) {
+    //             return NULL;
+    //         }
+    //         $contactResultError = 'Find Error: '. $contactResult->getMessage(). ' (' . $contactResult->code. ')';
+    //         return $contactResultError;
             
-        }
-
-        return $result->getrecords();
+    //     }
+    //     return $contactResult->getRecords();
         
-    }
+    // }
 
-    public function getCounselorContact($id) {
 
-    }
+    // //function to get counselor availability
+    // public function getCounselorAvailabilityDetails($id) {
+    //     $jwt = new config\jwt();
 
+    //     //get the object of database connection
+    //     $dbobj = new dbconnect\dbconnection();
+    //     $fm = $dbobj->connect();
+
+    //     //object from response class
+    //     $res = new res\userResponses();
+   
+        
+    //     //specify the layout
+    //     $findCommand = $fm->newFindCommand('CounselorAvailability_AVAILABILITY');
+        
+    //     //specify the role match criteria
+    //     $findCommand->addFindCriterion('_kf_Id_n', $id);
+
+    //     //execute the find command to get all student records
+    //     $result = $findCommand->execute();
+
+    //     //checking for errors in the result
+    //     if (\FileMaker::isError($result)) {
+    //         if( $result->getMessage() == "No records match the request" ) {
+    //             return NULL;
+    //         }
+    //         $findError = 'Find Error: '. $result->getMessage(). ' (' . $result->code. ')';
+    //         return "server error";
+    //     }
+
+    //     return $result->getrecords();
+        
+    // }
+    
     //function to get a single user record
     public function get($request, $response, $args) {
+
+
         //database connection
         $dbobj = new dbconnect\dbconnection();
         $fm = $dbobj->connect();
@@ -177,13 +213,12 @@ class apiClass {
             }
             else {
                 $newresponse = $response->withStatus(404);
-                return $newresponse->withJson(['success'=>false, 'message'=>'server error']);
+                return $newresponse->withJson(['success'=>false, 'message'=>'server user error']);
             }
-        }
+        }      
 
-        //get the FileMaker result set and changing i to proper response format
-        $resFormat = $res->getResponse($result->getRecords()[0]);
-
+        //get the FileMaker result set and changing it to proper response format
+        $resFormat = $res->getresponse($result->getRecords()[0]);
         
         //response after successful record is fetched
         $newresponse = $response->withStatus(200);
@@ -306,6 +341,13 @@ class apiClass {
 
         //coonection class object
         $dbobj = new dbconnect\dbconnection();
+
+        $updContact = json_decode(\contact\apiClass::updateContact($request, $response));
+        // print_r($updContact->success);
+        // exit(0);
+        if( $updContact->success == "false" ) {
+            return $response->withJson(["success"=>false, "message"=>$updContact->message], 400);
+        }
 
         //connection to get the filemaker connection object
         $fm = $dbobj->connect();

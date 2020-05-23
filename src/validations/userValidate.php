@@ -25,7 +25,7 @@ class validateFields
         }
         
         if($method == "put") {
-            if( $count != 8) {
+            if( $count != 13) {
                 return "reqst body is not appropriate";
             }
 
@@ -61,7 +61,7 @@ class validateFields
         
 
         $gender = $vars->gender;
-        if( preg_match("/^(Male|Female|Other|)$/", $gender) == false) {
+        if( preg_match("/^(male|female|other|)$/", $gender) == false) {
             return "gender is invalid";
         }
 

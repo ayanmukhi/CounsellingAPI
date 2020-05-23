@@ -52,65 +52,101 @@ class apiClass {
     }
 
 
-    //function to get all availability records
-    function getAvailability($request, $response, $args) {
+    // //function to get all availability records
+    // function getAvailability($request, $response, $args) {
 
 
-        //database connection
+    //     //database connection
+    //     $dbobj = new dbconnect\dbconnection();
+    //     $fm = $dbobj->connect();
+        
+    //     //object from response class
+    //     $res = new res\availabilityResponses();
+
+    //     //request data validation objects
+    //     $valid = new validate\validate();
+
+    //     //token validation object
+    //     $auth = new auth\authorize();
+
+    //     if($valid->sicVal($args['id']) != "no error") {
+    //         $newresponse = $response->withStatus(400);
+    //         return $newresponse->withJson(["success"=>false, 'message'=>$valid->sicVal($args['id'])]);
+    //     }
+
+    //     //User authentication based on jwt
+    //     if( $auth->checkUser($request, $response, $args['id']) != "legit") {
+    //         return $auth->checkUser($request, $response, $args['id']);
+    //     }
+        
+    //     //specify the layout
+    //     $findCommand = $fm->newFindCommand('CounselorAvailability_AVAILABILITY');
+
+    //     //specify the email and password match criteria
+    //     $findCommand->addFindCriterion('_kp_AvailabilityId_n', ' == '.$args['id']);
+
+
+    //     //execute the above command
+    //     $result = $findCommand->execute(); 
+
+    //     //checking for any error
+    //     if (\FileMaker::isError($result)) {
+    //         if( $result->getMessage() == "No records match the request" ) {
+    //             $newresponse = $response->withStatus(404);
+    //             return $newresponse->withJson(['success'=>false, 'message'=>'no record exist with this id']);
+    //         }
+    //         else {
+    //             $newresponse = $response->withStatus(404);
+    //             return $newresponse->withJson(['success'=>false, 'message'=>'server error']);
+    //         }
+    //     }
+
+    //     //get the FileMaker result set and changing i to proper response format
+    //     $resFormat = $res->getResponse($result->getRecords());
+
+        
+    //     //response after successful record is fetched
+    //     $newresponse = $response->withStatus(200);
+    //     return $response->withJson(["success"=>true, "data"=>$resFormat]);
+
+
+    //     print_r($args);
+    // }
+
+
+
+    //function to get counselor availability
+    public function getCounselorAvailabilityDetails($id) {
+        $jwt = new config\jwt();
+
+        //get the object of database connection
         $dbobj = new dbconnect\dbconnection();
         $fm = $dbobj->connect();
-        
+
         //object from response class
-        $res = new res\availabilityResponses();
-
-        //request data validation objects
-        $valid = new validate\validate();
-
-        //token validation object
-        $auth = new auth\authorize();
-
-        if($valid->sicVal($args) != "no error") {
-            $newresponse = $response->withStatus(400);
-            return $newresponse->withJson(["success"=>false, 'message'=>$valid->sicVal($args)]);
-        }
-
-        //User authentication based on jwt
-        if( $auth->checkUser($request, $response, $args['counselor_id']) != "legit") {
-            return $auth->checkUser($request, $response, $args['counselor_id']);
-        }
+        $res = new res\userResponses();
+   
         
         //specify the layout
         $findCommand = $fm->newFindCommand('CounselorAvailability_AVAILABILITY');
+        
+        //specify the role match criteria
+        $findCommand->addFindCriterion('_kf_Id_n', $id);
 
-        //specify the email and password match criteria
-        $findCommand->addFindCriterion('_kf_Id_n', ' == '.$args['counselor_id']);
+        //execute the find command to get all student records
+        $result = $findCommand->execute();
 
-
-        //execute the above command
-        $result = $findCommand->execute(); 
-
-        //checking for any error
+        //checking for errors in the result
         if (\FileMaker::isError($result)) {
             if( $result->getMessage() == "No records match the request" ) {
-                $newresponse = $response->withStatus(404);
-                return $newresponse->withJson(['success'=>false, 'message'=>'no record exist with this id']);
+                return NULL;
             }
-            else {
-                $newresponse = $response->withStatus(404);
-                return $newresponse->withJson(['success'=>false, 'message'=>'server error']);
-            }
+            $findError = 'Find Error: '. $result->getMessage(). ' (' . $result->code. ')';
+            return "server error";
         }
 
-        //get the FileMaker result set and changing i to proper response format
-        $resFormat = $res->getResponse($result->getRecords());
-
+        return $result->getrecords();
         
-        //response after successful record is fetched
-        $newresponse = $response->withStatus(200);
-        return $response->withJson(["success"=>true, "data"=>$resFormat]);
-
-
-        print_r($args);
     }
 
 
