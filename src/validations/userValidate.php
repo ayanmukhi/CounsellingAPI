@@ -10,7 +10,7 @@ class validateFields
     function sicVal($args) {
         $id = $args['id'];
         if (preg_match("/^\d+$/", $id) == false) {
-        return 'sic must be a number';
+        return 'id must be a number';
         }
         return "no error";
     }
@@ -61,7 +61,7 @@ class validateFields
         
 
         $gender = $vars->gender;
-        if( preg_match("/^(male|female|other|)$/", $gender) == false) {
+        if( preg_match("/^(Male|Female|Other|male|female|other|)$/", $gender) == false) {
             return "gender is invalid";
         }
 
@@ -80,7 +80,7 @@ class validateFields
         
         if( $method == "put") {
             if(($obj->checkemail($email, $request, $response) != -1) and ($obj->checkemail($email, $request, $response) != $vars->id)) {
-                return "email already used";
+                return "email already used".$obj->checkemail($email, $request, $response);
             }
         }
         else  {

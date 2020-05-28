@@ -11,6 +11,35 @@ use src\validations\availability as validate;
 class apiClass
 {
 
+
+    //function to book a new counselor
+    public function insretBooking( $request, $response) {
+       //database connection
+       $dbobj = new dbconnect\dbconnection();
+       $fm = $dbobj->connect();
+
+       $val = json_decode( $request->getBody() );
+       
+       $values = array (
+           '_kf_Id_n' => $val->seekerId,
+           'Date_d' => date("m/d/Y", strtotime($val->date)),
+           '_kf_AvailabilityId_n' => $val->availabilityId 
+       );
+
+       
+       //specify the layout
+       $rec = $fm->createRecord('Bookings_BOOKINGS', $values); 
+       $insertResult = $rec->commit();
+
+       //checking error populating fields in globalstudent layout
+       if(\FileMaker::isError($insertResult)) {
+            $findError = 'Find Error: '. $insertResult->getMessage(). ' (' . $insertResult->code. ')';
+            return $response->withJson(['success' => false, 'message' => $findError], 400);
+        }
+
+        return $response->withJson([ 'success' => true ], 200);
+    }
+
     //function to get all counselor bookings
     public function getCounselorBookings($id, $counselor) {
 
@@ -118,7 +147,7 @@ class apiClass
         if (\FileMaker::isError($phoneResult)) {
             if( $phoneResult->getMessage() == "No records match the request" ) {
                 $user = array(
-                    'clientImage' => $result->getRecords()[0]->_impl->_fields['Image_t'][0],
+                    'clientImage' => $result->getRecords()[0]->_impl->_fields['ImageFileRef_t'][0],
                     'clientName' => $result->getRecords()[0]->_impl->_fields['Name_t'][0],
                     'clientGender' => $result->getRecords()[0]->_impl->_fields['Gender_t'][0],
                     'clientEmail' => $result->getRecords()[0]->_impl->_fields['_ka_Username_t'][0],
@@ -135,7 +164,7 @@ class apiClass
         
 
         $user = array(
-            'clientImage' => $result->getRecords()[0]->_impl->_fields['Image_t'][0], 
+            'clientImage' => $result->getRecords()[0]->_impl->_fields['ImageFileRef_t'][0], 
             'clientName' => $result->getRecords()[0]->_impl->_fields['Name_t'][0],
             'clientGender' => $result->getRecords()[0]->_impl->_fields['Gender_t'][0],
             'clientEmail' => $result->getRecords()[0]->_impl->_fields['_ka_Username_t'][0],
@@ -149,7 +178,7 @@ class apiClass
     }
 
 
-    //function to get all counselor bookings
+    //function to get details of booked counselor
     public function getBookedCounselor($request, $response, $args) {
 
 
@@ -226,7 +255,7 @@ class apiClass
         if (\FileMaker::isError($phoneResult)) {
             if( $phoneResult->getMessage() == "No records match the request" ) {
                 $user = array(
-                    'clientImage' => $result->getRecords()[0]->_impl->_fields['Image_t'][0],
+                    'clientImage' => $result->getRecords()[0]->_impl->_fields['ImageFileRef_t'][0],
                     'clientName' => $result->getRecords()[0]->_impl->_fields['Name_t'][0],
                     'clientGender' => $result->getRecords()[0]->_impl->_fields['Gender_t'][0],
                     'clientEmail' => $result->getRecords()[0]->_impl->_fields['_ka_Username_t'][0],
@@ -246,7 +275,7 @@ class apiClass
         
 
         $user = array(
-            'clientImage' => $result->getRecords()[0]->_impl->_fields['Image_t'][0], 
+            'clientImage' => $result->getRecords()[0]->_impl->_fields['ImageFileRef_t'][0], 
             'clientName' => $result->getRecords()[0]->_impl->_fields['Name_t'][0],
             'clientGender' => $result->getRecords()[0]->_impl->_fields['Gender_t'][0],
             'clientEmail' => $result->getRecords()[0]->_impl->_fields['_ka_Username_t'][0],

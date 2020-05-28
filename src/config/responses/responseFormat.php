@@ -36,7 +36,7 @@ class userResponses {
     function getresponse($result) {
         
         $allBookings = [];
-        $id = $result->_impl->_fields['_kp_Id_n'][0];
+        $mainId = $result->_impl->_fields['_kp_Id_n'][0];
         $role = $result->_impl->_fields['Role_t'][0];
         $dob = "";
 
@@ -44,7 +44,7 @@ class userResponses {
             $dob = date("Y-m-d", strtotime($result->_impl->_fields['Dob_d'][0]));
         }
 
-        $contact = \contact\apiClass::getContactDetails($id);
+        $contact = \contact\apiClass::getContactDetails($mainId);
 
         //echo("contact : " . $contact);
         if( $contact  != null ) {
@@ -65,7 +65,7 @@ class userResponses {
 
             $Availability = [];
 
-            $availabilityDetails = \availability\apiClass::getCounselorAvailabilityDetails($id);
+            $availabilityDetails = \availability\apiClass::getCounselorAvailabilityDetails($mainId);
             
             
             if( $availabilityDetails != null) {
@@ -104,21 +104,21 @@ class userResponses {
             
             
             return array(
-                'id' => $id,
+                'id' => $mainId,
                 'name' => $result->_impl->_fields['Name_t'][0],
                 'gender' => $result->_impl->_fields['Gender_t'][0],
                 'dob' => $dob,
                 'username' => $result->_impl->_fields['_ka_Username_t'][0],
                 'password' => $result->_impl->_fields['Password_t'][0],
                 'role' => $role,
-                'image' => $result->_impl->_fields['Image_t'][0],
+                'image' => $result->_impl->_fields['ImageFileRef_t'][0],
                 'contact' => $contactDetails,
                 'availability' => $Availability,
                 'bookings' => $allBookings
             );
         }
         else {
-            $appointment = \bookings\apiClass::getCounselorBookings($id, false);
+            $appointment = \bookings\apiClass::getCounselorBookings($mainId, false);
             
             if( $appointment != null ) {
                 //structuring all appoinments of the seeker
@@ -134,14 +134,14 @@ class userResponses {
             
 
             return array(
-                'id' => $id,
+                'id' => $mainId,
                 'name' => $result->_impl->_fields['Name_t'][0],
                 'gender' => $result->_impl->_fields['Gender_t'][0],
                 'dob' => $dob,
                 'username' => $result->_impl->_fields['_ka_Username_t'][0],
                 'password' => $result->_impl->_fields['Password_t'][0],
                 'role' => $role,
-                'image' => $result->_impl->_fields['Image_t'][0],
+                'image' => $result->_impl->_fields['ImageFileRef_t'][0],
                 'contact' => $contactDetails,
                 'bookings' => $allBookings
             );
@@ -193,20 +193,20 @@ class userResponses {
 
 
     
-    function insertHobbyRecord($vars, $sic) {
-        $hobby = implode("\n",$vars->hobby);
-        return array(
-            'sic' => $sic,
-            'hobby_name' => $hobby
+    // function insertHobbyRecord($vars, $sic) {
+    //     $hobby = implode("\n",$vars->hobby);
+    //     return array(
+    //         'sic' => $sic,
+    //         'hobby_name' => $hobby
 
-        );
-    }
-    function insertActivity($vars) {
-        return array(
-            'sic' => $vars->sic,
-            'activities' => $vars->activity
-        );
-    }
+    //     );
+    // }
+    // function insertActivity($vars) {
+    //     return array(
+    //         'sic' => $vars->sic,
+    //         'activities' => $vars->activity
+    //     );
+    // }
     
     
 }

@@ -88,6 +88,7 @@ class apiClass {
         // print_r($result->getrecords() );
         // exit(0);
         $data = $res->getAllRecords($result->getrecords());
+        
 
         $newresponse = $response->withStatus(200);
         return $newresponse->withJson(['success'=>true, 'data'=>$data]);
@@ -381,7 +382,7 @@ class apiClass {
         if (\FileMaker::isError($result)) {
             if( $result->getMessage() == "No records match the request" ) {
                 $newresponse = $response->withStatus(404);
-                return $newresponse->withJson(['success'=>false, 'message'=>'record with given sic doesnot exists']);
+                return $newresponse->withJson(['success'=>false, 'message'=>'record with given id doesnot exists']);
             }
             else {
                 $findError = $result->getMessage(). ' (' . $result->code. ')';
@@ -404,6 +405,19 @@ class apiClass {
             return $newresponse->withJson(['success'=>false, "userRecordUpdationError"=>$findError]);
             
         }
+
+        //run a script in FM
+        $scripts = $fm->listScripts();
+        $newPerformScript = $fm->newPerformScriptCommand('Signup_USER', $scripts[4]);
+        $scriptResult = $newPerformScript->execute(); 
+        if (\FileMaker::isError($scriptResult)) {
+            
+                $findError = $scriptResult->getMessage(). ' (' . $scriptResult->code. ')';
+                $newresponse = $response->withStatus(404);
+                return $newresponse->withJson(['success'=>false, "runningScriptError"=>$findError]);
+        
+        }
+
 
         $newresponse = $response->withStatus(200);
         return $newresponse->withJson(['success'=>true]);

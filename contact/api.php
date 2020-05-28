@@ -71,7 +71,6 @@ class apiClass {
         //validating the request header data
         $return = $valid->valContactData($vars, $request, $response);
         if($return != "no error") {
-            
             $ret->success = "false";
             $ret->message = $return;
             return json_encode ( $ret ); 
@@ -86,9 +85,10 @@ class apiClass {
             $values = $res->updateResponse($vars);
             //checking for error
             if (\FileMaker::isError($result)) {
+               // echo $result->getMessage(); 
                 if( $result->getMessage() == "No records match the request" ) {
-                    
-                    print_r($values);
+                   // echo "I am here";
+                    //print_r($values);
 
 
                      //populating fields of student layout
@@ -103,8 +103,20 @@ class apiClass {
                         return json_encode( $ret );
                     }
 
+                    $findCommand = $fm->newFindCommand('insertUserContact_CONTACT');
+                    $findCommand->addFindCriterion('_kf_Id_n','=='.$vars->id);
+                    $result = $findCommand->execute();
+
+
+                    if (\FileMaker::isError($result)) {
+                        $findError = 'Find Error: '. $result->getMessage(). ' (' . $result->code. ')';
+                        $ret->success = "false";
+                        $ret->message = $findError;
+                        return json_encode( $ret );
+                    }
+
                     //returning success response
-                    echo "insert success";
+                   // echo "insert success";
                 }
                 else {
                     $findError = $result->getMessage(). ' (' . $result->code. ')';
@@ -113,11 +125,13 @@ class apiClass {
                     return json_encode ( $ret ); 
                 }
             }
-            //print_r($result);
+           // print_r($result);
+            $temp = $result->getRecords();
+            // exit(0);
             //getting the specific record Id
-            $record = $result->getRecords()[0]->_impl;
+            $record = $temp[0]->_impl;
             $rec = $record->getRecordId();
-            // print_r($rec);
+           // print_r($record);
 
 
             $newEdit = $fm->newEditCommand('insertUserContact_CONTACT', $rec, $values);
