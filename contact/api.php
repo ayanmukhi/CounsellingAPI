@@ -68,6 +68,7 @@ class apiClass {
         
         $ret = new \stdClass();
 
+
         //validating the request header data
         $return = $valid->valContactData($vars, $request, $response);
         if($return != "no error") {
@@ -148,8 +149,23 @@ class apiClass {
             return json_encode($ret);
         }
 
-
-
-
     } 
+
+    // function format the records from the conatct portal
+    function getContactFromPortal( $portalRecods ) {
+
+        $portalData = [];
+        $val = $portalRecods[0]->_impl->_fields;
+        array_push ( $portalData , array(
+            'state' => $val['user_CONTACT_id::State_t'][0],
+            'streetName' => $val['user_CONTACT_id::StreetName_t'][0],
+            'district' => $val['user_CONTACT_id::District_t'][0],
+            'pin' => $val['user_CONTACT_id::Pin_n'][0], 
+            'phone' => $val['user_CONTACT_id::_ku_Phone_n'][0]
+        ));
+    
+
+        return $portalData[0];
+    }
+    
 }

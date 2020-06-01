@@ -19,6 +19,7 @@ class ComposerStaticInit584576283f1a81410a7671c98177eec6
         array (
             'Psr\\Http\\Message\\' => 17,
             'Psr\\Container\\' => 14,
+            'PHPMailer\\PHPMailer\\' => 20,
         ),
         'F' => 
         array (
@@ -39,6 +40,10 @@ class ComposerStaticInit584576283f1a81410a7671c98177eec6
         'Psr\\Container\\' => 
         array (
             0 => __DIR__ . '/..' . '/psr/container/src',
+        ),
+        'PHPMailer\\PHPMailer\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/phpmailer/phpmailer/src',
         ),
         'Firebase\\JWT\\' => 
         array (

@@ -10,7 +10,12 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Http\UploadedFile;
 use src\config as jwtns;
+use src\authenticate as auth;
 use src\config\connection as dbconnect;
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
 
 
 // require './../vendor/autoload.php';
@@ -193,7 +198,13 @@ $app->group('/api/v1/users', function () use ($app) {
 
     //api for admin to get all users records.
     $app->get('/counselors', function(Request $request, Response $response) {
-        return users\apiClass::getAllCounselors($request, $response);
+        // return users\apiClass::getAllCounselors($request, $response);
+
+        $result = users\apiClass::getCounselorDetails();
+        if( $result['success'] == 1) {
+            return $response->withJson(['success' => true, 'data' => $result['data']]);
+        }
+        return $response->withJson(['success' => false, 'data' => $result['error']]);
     });
 
 
@@ -243,6 +254,8 @@ $app->group('/api/v1/media', function() use ($app) {
 //grouping APIs for accesing availability
 $app->group('/api/v1/availabilities', function() use ($app) {
 
+
+
     //api to insert new availability record
     $app->post('', function(Request $request, Response $response) {
         return availability\apiClass::insertNewAvailability($request, $response);
@@ -254,11 +267,18 @@ $app->group('/api/v1/availabilities', function() use ($app) {
     });
 
     //api to delete a availability record
-    $app->delete("/{availability_id}", function(Request $request, Response $response, array $args){
+    $app->delete("/{id}", function(Request $request, Response $response, array $args){
         return availability\apiClass::deleteAvailability($request, $response, $args);
     });
 
+    //update a counselor's availability criteria
+    $app->put('', function(Request $request, Response $response) {
+        return availability\apiClass::updateAvailability($request, $response);
+    });
+
 });
+
+
 
 $app->get('/api/v1/appointedSeeker/{id}', function(Request $request, Response $response, array $args) {
     return bookings\apiClass::getAppointedUser($request, $response, $args);
@@ -285,6 +305,20 @@ $app->group('/api/v1/contact', function() use ($app) {
     $app->put('', function (Request $request, Response $response, array $args) {
         return contact\apiClass::updateContact($request, $response);
     });
+});
+
+
+$app->get('/appointment/{id}', function(Request $request, Response $response, array $args) {
+        $result = users\apiClass::getCounselorAvailabilityDetails($args['id']);
+        print_r(($result));
+});
+
+$app->get('/{id}', function(Request $request, Response $response, array $args) {
+    $result = users\apiClass::getCounselorDetails( $args['id']);
+    if( $result['success'] == 1) {
+        return $response->withJson(['success' => true, 'data' => $result['data']]);
+    }
+    return $response->withJson(['success' => false, 'data' => $result['error']]);
 });
 
 

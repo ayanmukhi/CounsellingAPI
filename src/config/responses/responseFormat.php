@@ -15,15 +15,11 @@ class userResponses {
         $id = $result[0]->_impl->_fields['_kp_Id_n'][0];
         $role = $result[0]->_impl->_fields['Role_t'][0];
         $name = $result[0]->_impl->_fields['Name_t'][0];
-        $image = $result[0]->_impl->_fields['Image_t'][0];
-
-        
-
 
         //generating the token
         $token = $jwt->jwttokenencryption($id, $role, $name);
 
-        return array( 'image'=>$image, 'token'=>$token); 
+        return array('token'=>$token); 
     }
 
     function getActivityRes($result) {
@@ -44,21 +40,6 @@ class userResponses {
             $dob = date("Y-m-d", strtotime($result->_impl->_fields['Dob_d'][0]));
         }
 
-        $contact = \contact\apiClass::getContactDetails($mainId);
-
-        //echo("contact : " . $contact);
-        if( $contact  != null ) {
-            $contactDetails = array (
-                'state' => $contact[0]->_impl->_fields['State_t'][0],
-                'streetName' => $contact[0]->_impl->_fields['StreetName_t'][0],
-                'district' => $contact[0]->_impl->_fields['District_t'][0],
-                'pin' => $contact[0]->_impl->_fields['Pin_n'][0],
-                'phone' => $contact[0]->_impl->_fields['_ku_Phone_n'][0]
-            );
-        }
-        else {
-            $contactDetails = null;
-        }
 
         if( $role == "counselor") {
             
@@ -85,6 +66,10 @@ class userResponses {
                         ));
 
                     }
+                    $day = explode("\n", $details->_impl->_fields['Day_t'][0]);
+                    if( count($day) > 1 ) {
+                        $day = array_slice( $day, 0 , count($day) -1 );
+                    }
                     
 
 
@@ -93,7 +78,7 @@ class userResponses {
                         'Id' => $details->_impl->_fields['_kp_AvailabilityId_n'][0],
                         'Status'=>$details->_impl->_fields['Status_t'][0],
                         'Time'=>$details->_impl->_fields['Time_t'][0],
-                        'Day'=>explode("\n", $details->_impl->_fields['Day_t'][0]),
+                        'Day'=> $day,
                         'Type'=>$details->_impl->_fields['Type_t'][0],
                         'Location'=>$details->_impl->_fields['Location_t'][0],
                         'Rating_t'=>$details->_impl->_fields['Rating_n'][0]
@@ -112,7 +97,7 @@ class userResponses {
                 'password' => $result->_impl->_fields['Password_t'][0],
                 'role' => $role,
                 'image' => $result->_impl->_fields['ImageFileRef_t'][0],
-                'contact' => $contactDetails,
+                'contact' => null,
                 'availability' => $Availability,
                 'bookings' => $allBookings
             );
@@ -142,16 +127,14 @@ class userResponses {
                 'password' => $result->_impl->_fields['Password_t'][0],
                 'role' => $role,
                 'image' => $result->_impl->_fields['ImageFileRef_t'][0],
-                'contact' => $contactDetails,
+                'contact' => null,
                 'bookings' => $allBookings
             );
         }
         
     }
-
-
-    
-
+ 
+    // function to get response format for all records
     function getAllRecords($result) {
         
         //database connection
@@ -173,6 +156,8 @@ class userResponses {
         return $records;
     }
 
+
+    //function to for insert new user response format
     function insertUser($vars) {
 
         //changing angular date format to FileMaker date format
@@ -181,32 +166,13 @@ class userResponses {
         //creating the required response format
         $student = array(
             'Name_t' => $vars->name,
-            'Dob_d' => "$dob",
-            'Gender_t' => "$vars->gender",
-            '_ka_Username_t' => "$vars->username",
-            'Password_t' => "$vars->password",
-            'Role_t' => $vars->role,
+            'Dob_d' => $dob,
+            'Gender_t' => $vars->gender,
+            '_ka_Username_t' => $vars->username,
+            'Password_t' => $vars->password,
             'Image_t' => $vars->image
         );
         return $student;
-    }
-
-
-    
-    // function insertHobbyRecord($vars, $sic) {
-    //     $hobby = implode("\n",$vars->hobby);
-    //     return array(
-    //         'sic' => $sic,
-    //         'hobby_name' => $hobby
-
-    //     );
-    // }
-    // function insertActivity($vars) {
-    //     return array(
-    //         'sic' => $vars->sic,
-    //         'activities' => $vars->activity
-    //     );
-    // }
-    
+    }    
     
 }

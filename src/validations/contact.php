@@ -5,9 +5,10 @@ namespace src\validations\contact;
 class validate
 {
     public function valContactData($vars, $request, $response) {
-        
+        // print_r($vars);
         $streetName = $vars->streetName;
         if( strlen($streetName) == 0 ) {
+            // echo $streetName;
             return "street name is not valid";
         }
 

@@ -7,51 +7,12 @@ use src\validations as validate;
 use src\authenticate as auth;
 use src\config as config;
 use src\config\responses as res;
+use src\config as jwtns;
 
 
 class apiClass {
 
-    //function to get all user records
-    // public function getALL($request, $response) {
-    //     $jwt = new config\jwt();
-    //     $auth = new auth\authorize();
-
-    //     // if( $auth->checkAdmin($request, $response) != "legit") {
-    //     //     return $auth->checkAdmin($request, $response);
-    //     // }
-
-    //     //get the object of database connection
-    //     $dbobj = new dbconnect\dbconnection();
-    //     $fm = $dbobj->connect();
-
-    //     //object from response class
-    //     $res = new res\userResponses();
-   
-        
-    //     //specify the layout
-    //     $findCommand = $fm->newFindCommand('Signup_USER');
-        
-    //     //execute the find command to get all student records
-    //     $result = $findCommand->execute();
-
-    //     //checking for errors in the result
-    //     if (\FileMaker::isError($result)) {
-    //         if( $result->getMessage() == "No records match the request" ) {
-    //             $newresponse = $response->withStatus(404);
-    //             return $newresponse->withJson(['success'=>false, 'message'=>'database is empty']);
-    //         }
-    //         else {
-    //             $newresponse = $response->withStatus(404);
-    //             return $newresponse->withJson(['success'=>false, 'message'=>'server error']);
-    //         }
-    //     }
-
-    //     $data = $res->getAllRecords($result->getrecords());
-
-    //     $newresponse = $response->withStatus(200);
-    //     return $newresponse->withJson(['success'=>true, 'data'=>$data]);
-        
-    // }
+    
 
     //function to get all counselors details
     public function getAllCounselors($request, $response) {
@@ -85,89 +46,20 @@ class apiClass {
                 return $newresponse->withJson(['success'=>false, 'message'=>'server error']);
             }
         }
-        // print_r($result->getrecords() );
-        // exit(0);
+
+
         $data = $res->getAllRecords($result->getrecords());
+        // $data = apiClass::CounselorProfileData( $result->getRecords());
+        // print_r ( $data);
+        // exit(0);
         
 
         $newresponse = $response->withStatus(200);
         return $newresponse->withJson(['success'=>true, 'data'=>$data]);
         
     }
+    
 
-    //function to get contact of user
-    // public function getContactDetails($id) {
-    //     $jwt = new config\jwt();
-
-    //     //get the object of database connection
-    //     $dbobj = new dbconnect\dbconnection();
-    //     $fm = $dbobj->connect();
-
-    //     //object from response class
-    //     $res = new res\userResponses();
-   
-        
-    //     //fetch contact details.
-    //     $findCommand = $fm->newFindCommand('InsertUserContact_CONTACT');
-
-    //     //specify the email and password match criteria
-    //     $findCommand->addFindCriterion('_kf_Id_n', ' == '.$id);
-
-
-    //     $contact;
-
-    //     //execute the above command
-    //     $contactResult = $findCommand->execute(); 
-
-        
-
-    //     //checking for errors in the result
-    //     if (\FileMaker::isError($contactResult)) {
-    //         if( $contactResult->getMessage() == "No records match the request" ) {
-    //             return NULL;
-    //         }
-    //         $contactResultError = 'Find Error: '. $contactResult->getMessage(). ' (' . $contactResult->code. ')';
-    //         return $contactResultError;
-            
-    //     }
-    //     return $contactResult->getRecords();
-        
-    // }
-
-
-    // //function to get counselor availability
-    // public function getCounselorAvailabilityDetails($id) {
-    //     $jwt = new config\jwt();
-
-    //     //get the object of database connection
-    //     $dbobj = new dbconnect\dbconnection();
-    //     $fm = $dbobj->connect();
-
-    //     //object from response class
-    //     $res = new res\userResponses();
-   
-        
-    //     //specify the layout
-    //     $findCommand = $fm->newFindCommand('CounselorAvailability_AVAILABILITY');
-        
-    //     //specify the role match criteria
-    //     $findCommand->addFindCriterion('_kf_Id_n', $id);
-
-    //     //execute the find command to get all student records
-    //     $result = $findCommand->execute();
-
-    //     //checking for errors in the result
-    //     if (\FileMaker::isError($result)) {
-    //         if( $result->getMessage() == "No records match the request" ) {
-    //             return NULL;
-    //         }
-    //         $findError = 'Find Error: '. $result->getMessage(). ' (' . $result->code. ')';
-    //         return "server error";
-    //     }
-
-    //     return $result->getrecords();
-        
-    // }
     
     //function to get a single user record
     public function get($request, $response, $args) {
@@ -216,14 +108,25 @@ class apiClass {
                 $newresponse = $response->withStatus(404);
                 return $newresponse->withJson(['success'=>false, 'message'=>'server user error']);
             }
-        }      
+        }    
+        $record = ($result->getRecords())[0];  
 
         //get the FileMaker result set and changing it to proper response format
-        $resFormat = $res->getresponse($result->getRecords()[0]);
+        $resFormat = $res->getresponse($record);
+
         
-        //response after successful record is fetched
+        //fetching data from contact portal
+        $contacts = $record->getRelatedSet('user_CONTACT_id');
+        
+        //checking if the counselor have a contact or not
+        if (gettype($contacts) == 'array') {
+            $contact = \contact\apiClass::getContactFromPortal($contacts);
+            $resFormat['contact'] = $contact;
+            return $response->withJson(["success"=>true, "data"=>$resFormat], 200);
+        }
         $newresponse = $response->withStatus(200);
-        return $response->withJson(["success"=>true, "data"=>$resFormat]);
+        return $response->withJson(["success"=>true, "data"=>$resFormat], 200);
+                 
        
     }
 
@@ -343,6 +246,10 @@ class apiClass {
         //coonection class object
         $dbobj = new dbconnect\dbconnection();
 
+        //get the request body
+        $vars = json_decode($request->getBody());
+        // print_r($vars);
+
         $updContact = json_decode(\contact\apiClass::updateContact($request, $response));
         // print_r($updContact->success);
         // exit(0);
@@ -353,14 +260,13 @@ class apiClass {
         //connection to get the filemaker connection object
         $fm = $dbobj->connect();
 
-        //get the request body
-        $vars = json_decode($request->getBody());
         
+
         //validating the request header data
         $return = $valid->valUserData($vars, "put", $request, $response);
         if($return != "no error") {
             $newresponse = $response->withStatus(400);
-            return $newresponse->withJson(["success"=>false, "message"=>$return]); 
+            return $newresponse->withJson(["success"=>false, "mese"=>$return]); 
         }
         
 
@@ -369,9 +275,6 @@ class apiClass {
             return $auth->checkUser($request, $response, $vars->id);
         }
 
-        //getting the new values in array format
-        $values = $res->insertUser($vars);
-        unset($values["Role_t"]);
         
         //commands to find the specific record
         $findCommand = $fm->newFindCommand('Signup_USER');
@@ -393,16 +296,34 @@ class apiClass {
 
         //getting the specific record Id
         $record = $result->getRecords()[0]->_impl;
-        $rec = $record->getRecordId();
+        $rec_ID = $record->getRecordId();
 
-        $newEdit = $fm->newEditCommand('Signup_USER', $rec, $values);
-        $result = $newEdit->execute(); 
+        // $newEdit = $fm->newEditCommand('Signup_USER', $rec, $values);
+        // $result = $newEdit->execute(); 
+
+        //changing angular date format to FileMaker date format
+        $dob = date("m/d/Y", strtotime($vars->dob));
+
+        $rec = $fm->getRecordById('Signup_USER', $rec_ID);
+        $rec->setField('Name_t', $vars->name);
+        $rec->setField('Dob_d', $dob);
+        $rec->setField('Gender_t', $vars->gender);
+        $rec->setField('_ka_Username_t', $vars->username);
+
+        $check =  property_exists($vars, "image");
+        if( $check ) {
+            $rec->setField('Image_t', $vars->image);
+        }
+
+
+        $result = $rec->commit();
 
         //checking for any error
         if (\FileMaker::isError($result)) {
+            // print_r( $result);
              $findError = $result->getMessage(). ' (' . $result->code. ')';
             $newresponse = $response->withStatus(404);
-            return $newresponse->withJson(['success'=>false, "userRecordUpdationError"=>$findError]);
+            return $newresponse->withJson(['success'=>false, "userRecordUpdationError"=>$findError, "fields" => $values, "record Id" => $rec]);
             
         }
 
@@ -466,10 +387,115 @@ class apiClass {
         //change the fetched data to proper response data.
         $resFormat = $res->loginResponse($result->getRecords());
 
-
         //response after successful record is fetched
         $newresponse = $response->withStatus(200);
         return $response->withJson(["success"=>true, "token"=>$resFormat['token']]);
 
     }
+
+    
+    // function to get data of all a counselors
+    public function getCounselorDetails() {
+        
+        //coonection class object
+        $dbobj = new dbconnect\dbconnection();
+
+        //varriable for returning in json format
+        $ret = [];
+
+        //connection to get the filemaker connection object
+        $fm = $dbobj->connect();
+
+        
+        //declaring temporary varriables to store data for each record temporarily
+        $allData = [];
+        $availability = [];
+        $contact = null;
+        $dob = "";
+
+        //commands to find the specific record
+        $findCommand = $fm->newFindCommand('counselorFetchData_USER');
+        $findCommand->addFindCriterion('Role_t', 'counselor');
+        $result = $findCommand->execute();
+
+        
+
+        //checking for error
+        if (\FileMaker::isError($result)) {
+            if( $result->getMessage() == "No records match the request" ) {
+                $ret['success'] = false;
+                $ret['error'] = 'no record with this availability is exist';
+                return $ret;
+            }
+            else {
+                $findError = $result->getMessage(). ' (' . $result->code. ')';
+                $ret['success'] = false;
+                $ret['error'] = $findError;
+                return $ret;
+                
+            }
+        }
+
+        $records = $result->getRecords();
+        
+
+        foreach( $records as $record) {
+            
+            //fetching the data from availability portal
+            $availabilities = $record->getRelatedSet('user_AVAILABILITY_id');
+            
+            //checking whether the counselor have a availability or not
+            if (gettype($availabilities) == 'array') {
+                $availability = \availability\apiClass::getAvailabilityFromPortal($availabilities);
+            }
+            else {
+                $availability = null;
+            }
+
+
+            //fetching data from contact portal
+            $contacts = $record->getRelatedSet('user_CONTACT_id');
+
+            //checking if the counselor have a contact or not
+            if (gettype($contacts) == 'array') {
+                $contact = \contact\apiClass::getContactFromPortal($contacts);
+            }
+            else {
+                $contact = null;
+            }           
+
+            //checking date value before formatting
+            if ( $record->_impl->_fields['Dob_d'][0] != "" ) {
+                $dob = date("Y-m-d", strtotime($record->_impl->_fields['Dob_d'][0]));
+            }
+
+            array_push( $allData , array(
+                'id' => $record->_impl->_fields['_kp_Id_n'][0],
+                'name' => $record->_impl->_fields['Name_t'][0],
+                'gender' => $record->_impl->_fields['Gender_t'][0],
+                'dob' => $dob,
+                'username' => $record->_impl->_fields['_ka_Username_t'][0],
+                'password' => $record->_impl->_fields['Password_t'][0],
+                'image' => $record->_impl->_fields['ImageFileRef_t'][0],
+                'contact' => $contact ,
+                'availability' => $availability,
+            ));
+            
+            
+        }
+        
+        // $portalData = apiClass::getAvailabilityFromPortal($record);
+        $ret['success'] = true;
+        $ret['data'] = $allData;
+        return $ret;
+    }
+
+
+
+    
+
+    
+
+
+
 }

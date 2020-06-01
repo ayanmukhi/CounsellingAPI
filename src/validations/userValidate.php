@@ -25,8 +25,8 @@ class validateFields
         }
         
         if($method == "put") {
-            if( $count != 13) {
-                return "reqst body is not appropriate";
+            if( $count != 13 && $count != 12) {
+                return "reqst body is not appropriate".$count;
             }
 
             $id = $vars->id;

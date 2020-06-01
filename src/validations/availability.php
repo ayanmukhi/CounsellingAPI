@@ -25,6 +25,7 @@ class validate {
         }
         
         if($method == "put") {
+            
             if( $count != 6) {
                 return "reqst body is not appropriate";
             }
@@ -34,6 +35,7 @@ class validate {
                 $newresponse = $response->withStatus(400);
                 return $newresponse->withJson(["success"=>false, 'message'=>'cousenlor id  must be a number']);
             }
+
         } else {
             if( $count != 5) {
                 return $count."reqst body is not appropriate";
@@ -50,9 +52,12 @@ class validate {
 
         //validate day
         $str = $vars->day;
-        if( preg_match("/^[a-zA-Z]+(\s[a-zA-Z]*)*$/", $str) == false ) {
-            return "day is not valid";
+        foreach( $str as $day) {
+            if( preg_match("/^Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday$/", $day) == false ) {
+                return "day is not valid";
+            }
         }
+        
 
 
         //validate location
@@ -64,7 +69,7 @@ class validate {
 
         //validate time 
         $time = $vars->time;
-        if( preg_match("/^[0-9]{2}:[0-9]{2}(AM|PM)$/", $time) == false ) {
+        if( preg_match("/^[0-9]{2}:[0-9]{2}$/", $time) == false ) {
             return "time is not valid";
         }
 
