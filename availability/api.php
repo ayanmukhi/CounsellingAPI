@@ -138,6 +138,9 @@ class apiClass {
 
 
             $day = explode("\n", $val['user_AVAILABILITY_id::Day_t'][0]);
+            if( count($day) > 1 ) {
+                 array_pop($day);
+            }
             
             $availId = $val['user_AVAILABILITY_id::_kp_AvailabilityId_n'][0];
             $bookigs = json_decode(apiClass::getCounselorAvailabilityDetailsFromPortal( $availId ));
